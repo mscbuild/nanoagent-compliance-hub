@@ -230,6 +230,22 @@ Expected:
 
 ---
 
+## API Endpoints
+
+| Method | Endpoint                 | Purpose            |
+| ------ | ------------------------ | ------------------ |
+| GET    | `/`                      | Application info   |
+| GET    | `/health`                | Health check       |
+| POST   | `/expenses`              | Submit expense     |
+| GET    | `/expenses`              | List expenses      |
+| GET    | `/expenses/{id}`         | Expense details    |
+| POST   | `/expenses/{id}/approve` | Approve expense    |
+| POST   | `/expenses/{id}/reject`  | Reject expense     |
+| POST   | `/demo/prompt-injection` | Security demo      |
+| POST   | `/demo/pii`              | PII redaction demo |
+
+---
+
 ## License
 
 MIT
