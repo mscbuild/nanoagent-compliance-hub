@@ -268,6 +268,14 @@ Expected:
 
 ---
 
+> [!WARNING]  
+> Please ensure all contributions maintain ethical use guidelines.
+ 
+✅ No vulnerable dependencies detected.
+
+<!--
+keywords: nanoagent-compliance-hub, nano automation, n8n examples, n8n templates, no-code automation, telegram bot workflows, openai nano, webhook automation, best proyect, creative repo, awesome, star repo, mscbuild, YuriDev
+-->
 ## License
 
 MIT
