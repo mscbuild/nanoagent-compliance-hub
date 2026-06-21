@@ -1,11 +1,8 @@
 # NanoAgent Compliance Hub
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
-
 ![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green)
-
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue)
-
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
 ## Multi-Agent Expense Auditing Platform
