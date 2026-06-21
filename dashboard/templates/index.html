@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>NanoAgent Dashboard</title>
+
+<link rel="stylesheet"
+href="/static/styles.css">
+
+</head>
+
+<body>
+
+<h1>
+NanoAgent Compliance Hub
+</h1>
+
+<table>
+
+<tr>
+<th>ID</th>
+<th>Submitter</th>
+<th>Amount</th>
+<th>Category</th>
+<th>Status</th>
+<th>Risk</th>
+<th>Actions</th>
+</tr>
+
+{% for expense in expenses %}
+
+<tr>
+
+<td>{{ expense.id }}</td>
+
+<td>{{ expense.submitter }}</td>
+
+<td>${{ expense.amount }}</td>
+
+<td>{{ expense.category }}</td>
+
+<td>{{ expense.status }}</td>
+
+<td>{{ expense.risk_score }}</td>
+
+<td>
+
+<a href="/approve/{{ expense.id }}">
+Approve
+</a>
+
+|
+
+<a href="/reject/{{ expense.id }}">
+Reject
+</a>
+
+</td>
+
+</tr>
+
+<tr>
+
+<td colspan="7">
+
+<details>
+
+<summary>
+View Audit Report
+</summary>
+
+<pre>
+{{ expense.audit_report }}
+</pre>
+
+</details>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</body>
+
+</html>
