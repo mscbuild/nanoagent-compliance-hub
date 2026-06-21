@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NanoAgent Compliance Hub — Admin</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.16/index.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --sidebar-w:260px;
+    --grad:linear-gradient(135deg,#7c5cff 0%,#00d4ff 100%);
+    --grad-2:linear-gradient(135deg,#ff5cf0 0%,#7c5cff 50%,#00d4ff 100%);
+    --primary:#7c5cff;
+    --primary-2:#00d4ff;
+    --accent:#ff5cf0;
+    --success:#16a87e;
+    --warning:#e89612;
+    --danger:#e53e5f;
+    --info:#2b88e8;
+  }
+
+  /* DARK THEME (default) */
+  [data-theme="dark"]{
+    --bg-0:#05071a;
+    --bg-1:#0a0e2a;
+    --bg-2:#11153a;
+    --bg-elev:#161b44;
+    --surface:rgba(255,255,255,0.04);
+    --surface-2:rgba(255,255,255,0.07);
+    --surface-3:rgba(255,255,255,0.1);
+    --border:rgba(255,255,255,0.08);
+    --border-2:rgba(255,255,255,0.14);
+    --text:#e8ecf8;
+    --text-2:#ffffff;
+    --muted:#9aa3c7;
+    --muted-2:#6b7499;
+    --shadow-card:0 4px 20px rgba(0,0,0,0.2);
+    --shadow-elev:0 10px 30px rgba(0,0,0,0.3);
+    --bg-radial-1:rgba(124,92,255,0.12);
+    --bg-radial-2:rgba(0,212,255,0.08);
+    --bg-radial-3:rgba(255,92,240,0.06);
+    --chart-grid:rgba(255,255,255,0.04);
+    --overlay-bg:rgba(0,0,0,0.5);
+    --topbar-bg:rgba(5,7,26,0.7);
+    --sidebar-bg:rgba(10,14,42,0.6);
+    --kbd-bg:var(--surface-2);
+  }
+
+  /* LIGHT THEME */
+  [data-theme="light"]{
+    --bg-0:#f5f7fb;
+    --bg-1:#ffffff;
+    --bg-2:#f0f2f8;
+    --bg-elev:#ffffff;
+    --surface:rgba(0,0,0,0.02);
+    --surface-2:rgba(0,0,0,0.04);
+    --surface-3:rgba(0,0,0,0.07);
+    --border:rgba(15,23,42,0.08);
+    --border-2:rgba(15,23,42,0.14);
+    --text:#0f172a;
+    --text-2:#020617;
+    --muted:#475569;
+    --muted-2:#94a3b8;
+    --shadow-card:0 1px 3px rgba(15,23,42,0.06), 0 4px 12px rgba(15,23,42,0.04);
+    --shadow-elev:0 8px 24px rgba(15,23,42,0.08);
+    --bg-radial-1:rgba(124,92,255,0.08);
+    --bg-radial-2:rgba(0,180,220,0.06);
+    --bg-radial-3:rgba(255,92,240,0.05);
+    --chart-grid:rgba(15,23,42,0.06);
+    --overlay-bg:rgba(15,23,42,0.4);
+    --topbar-bg:rgba(255,255,255,0.8);
+    --sidebar-bg:rgba(255,255,255,0.85);
+    --kbd-bg:#e2e8f0;
+    --primary:#6d4aff;
+    --primary-2:#0099cc;
+    --accent:#d946d0;
+    --success:#0d9668;
+    --warning:#c77a00;
+    --danger:#dc2f52;
+    --info:#1d6fd1;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    background:var(--bg-0);
+    color:var(--text);
+    font-size:14px;
+    overflow-x:hidden;
+    transition:background .3s ease,color .3s ease;
+  }
+  body::before{
+    content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;
+    background:
+      radial-gradient(ellipse 60% 40% at 10% 0%,var(--bg-radial-1),transparent 60%),
+      radial-gradient(ellipse 50% 40% at 90% 30%,var(--bg-radial-2),transparent 60%),
+      radial-gradient(ellipse 60% 40% at 50% 100%,var(--bg-radial-3),transparent 60%);
+    transition:background .3s ease;
+  }
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:4px}
+  ::-webkit-scrollbar-thumb:hover{background:var(--border-2)}
+
+  /* LAYOUT */
+  .app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh}
+
+  /* SIDEBAR */
+  .sidebar{
+    background:var(--sidebar-bg);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    border-right:1px solid var(--border);
+    padding:20px 16px;
+    position:sticky;top:0;height:100vh;
+    display:flex;flex-direction:column;
+    overflow-y:auto;
+    transition:background .3s ease,border-color .3s ease;
+  }
+  .logo{display:flex;align-items:center;gap:10px;padding:6px 8px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
+  .logo-mark{
+    width:38px;height:38px;border-radius:10px;
+    background:var(--grad);display:grid;place-items:center;
+    font-size:18px;color:#fff;
+    box-shadow:0 8px 20px rgba(124,92,255,0.4);
+  }
+  .logo-text{font-weight:700;font-size:16px;line-height:1.1;color:var(--text-2)}
+  .logo-text small{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:2px}
+  .logo-text span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  .nav-group{margin-bottom:20px}
+  .nav-label{font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted-2);padding:8px 12px;font-weight:600}
+  .nav-item{
+    display:flex;align-items:center;gap:12px;
+    padding:10px 12px;border-radius:10px;
+    color:var(--muted);font-weight:500;font-size:14px;
+    cursor:pointer;transition:all .2s;
+    margin-bottom:2px;position:relative;
+  }
+  .nav-item i{font-size:17px;width:20px;text-align:center}
+  .nav-item:hover{background:var(--surface);color:var(--text)}
+  .nav-item.active{
+    background:linear-gradient(135deg,rgba(124,92,255,0.15),rgba(0,212,255,0.08));
+    color:var(--text-2);
+    box-shadow:inset 0 0 0 1px rgba(124,92,255,0.25);
+  }
+  [data-theme="light"] .nav-item.active{
+    background:linear-gradient(135deg,rgba(109,74,255,0.12),rgba(0,153,204,0.08));
+  }
+  .nav-item.active::before{
+    content:'';position:absolute;left:-16px;top:50%;transform:translateY(-50%);
+    width:3px;height:20px;border-radius:0 3px 3px 0;background:var(--grad);
+  }
+  .nav-badge{
+    margin-left:auto;font-size:11px;font-weight:700;
+    padding:2px 8px;border-radius:999px;
+    background:rgba(229,62,95,0.15);color:var(--danger);
+  }
+  .nav-badge.info{background:rgba(0,153,204,0.15);color:var(--primary-2)}
+  .nav-badge.warn{background:rgba(232,150,18,0.15);color:var(--warning)}
+
+  .sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid var(--border)}
+  .agent-status{
+    padding:14px;border-radius:12px;
+    background:linear-gradient(135deg,rgba(34,211,166,0.12),rgba(0,212,255,0.08));
+    border:1px solid rgba(34,211,166,0.25);
+  }
+  .agent-status .row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .agent-status .dot{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 10px var(--success);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  .agent-status .t{font-weight:600;font-size:13px;color:var(--text-2)}
+  .agent-status .s{font-size:11px;color:var(--muted)}
+  .agent-status .bar{height:4px;border-radius:2px;background:rgba(0,0,0,0.08);overflow:hidden;margin-top:10px}
+  [data-theme="dark"] .agent-status .bar{background:rgba(255,255,255,0.08)}
+  .agent-status .bar i{display:block;height:100%;width:72%;background:var(--grad);border-radius:2px}
+
+  /* MAIN */
+  .main{min-width:0;display:flex;flex-direction:column}
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:var(--topbar-bg);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--border);
+    padding:14px 28px;
+    display:flex;align-items:center;gap:16px;
+    transition:background .3s ease,border-color .3s ease;
+  }
+  .menu-toggle{display:none;font-size:22px;padding:6px}
+  .page-title h1{font-size:20px;font-weight:700;letter-spacing:-0.01em;color:var(--text-2)}
+  .page-title p{font-size:12px;color:var(--muted);margin-top:2px}
+  .search{
+    margin-left:auto;position:relative;flex:0 1 360px;
+  }
+  .search input{
+    width:100%;padding:10px 52px 10px 38px;
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:10px;color:var(--text);font-size:13px;
+    outline:none;transition:all .2s;
+  }
+  .search input::placeholder{color:var(--muted)}
+  .search input:focus{border-color:rgba(124,92,255,0.4);background:var(--surface-2)}
+  .search i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .search kbd{
+    position:absolute;right:10px;top:50%;transform:translateY(-50%);
+    font-size:11px;padding:2px 6px;border-radius:4px;
+    background:var(--kbd-bg);border:1px solid var(--border);color:var(--muted);font-family:inherit;
+  }
+  .icon-btn{
+    width:38px;height:38px;border-radius:10px;
+    background:var(--surface);border:1px solid var(--border);
+    display:grid;place-items:center;font-size:16px;
+    position:relative;transition:all .2s;color:var(--text);
+  }
+  .icon-btn:hover{background:var(--surface-2);border-color:var(--border-2)}
+  .icon-btn .ping{
+    position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;
+    background:var(--danger);box-shadow:0 0 8px var(--danger);
+  }
+  .avatar{
+    width:38px;height:38px;border-radius:10px;
+    background:var(--grad);display:grid;place-items:center;
+    font-weight:700;font-size:13px;color:#fff;cursor:pointer;
+  }
+
+  /* THEME TOGGLE */
+  .theme-toggle{
+    position:relative;
+    width:56px;height:30px;
+    border-radius:999px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    cursor:pointer;
+    transition:all .3s;
+    flex-shrink:0;
+  }
+  .theme-toggle:hover{border-color:var(--border-2)}
+  .theme-toggle .thumb{
+    position:absolute;top:2px;left:2px;
+    width:24px;height:24px;border-radius:50%;
+    background:var(--grad);
+    display:grid;place-items:center;
+    color:#fff;font-size:12px;
+    transition:transform .35s cubic-bezier(.5,1.5,.5,1);
+    box-shadow:0 2px 8px rgba(124,92,255,0.4);
+  }
+  [data-theme="light"] .theme-toggle .thumb{transform:translateX(26px)}
+  .theme-toggle .icon-sun,
+  .theme-toggle .icon-moon{
+    position:absolute;top:50%;transform:translateY(-50%);
+    font-size:12px;transition:opacity .3s;
+  }
+  .theme-toggle .icon-sun{left:8px;color:var(--muted-2);opacity:0}
+  .theme-toggle .icon-moon{right:8px;color:var(--muted-2);opacity:1}
+  [data-theme="light"] .theme-toggle .icon-sun{opacity:1}
+  [data-theme="light"] .theme-toggle .icon-moon{opacity:0}
+
+  /* CONTENT */
+  .content{padding:28px;flex:1}
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:24px}
+  .kpi{
+    padding:20px;border-radius:16px;
+    background:var(--bg-1);
+    border:1px solid var(--border);
+    box-shadow:var(--shadow-card);
+    position:relative;overflow:hidden;transition:all .3s;
+  }
+  .kpi:hover{transform:translateY(-2px);border-color:var(--border-2);box-shadow:var(--shadow-elev)}
+  .kpi .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .kpi .ico{
+    width:40px;height:40px;border-radius:10px;
+    display:grid;place-items:center;font-size:18px;
+  }
+  .kpi .delta{font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px}
+  .kpi .delta.up{background:rgba(13,150,104,0.12);color:var(--success)}
+  .kpi .delta.down{background:rgba(220,47,82,0.12);color:var(--danger)}
+  .kpi .lbl{font-size:12px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+  .kpi .val{font-size:26px;font-weight:800;letter-spacing:-0.02em;margin-bottom:4px;color:var(--text-2)}
+  .kpi .sub{font-size:12px;color:var(--muted)}
+
+  .kpi.danger .ico{background:rgba(220,47,82,0.12);color:var(--danger)}
+  .kpi.success .ico{background:rgba(13,150,104,0.12);color:var(--success)}
+  .kpi.warn .ico{background:rgba(232,150,18,0.12);color:var(--warning)}
+  .kpi.info .ico{background:rgba(0,153,204,0.12);color:var(--primary-2)}
+
+  /* GRID LAYOUTS */
+  .grid-2{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:24px}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:24px}
+
+  .card{
+    background:var(--bg-1);
+    border:1px solid var(--border);
+    border-radius:16px;padding:20px;
+    box-shadow:var(--shadow-card);
+    transition:background .3s ease,border-color .3s ease;
+  }
+  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+  .card-head h3{font-size:15px;font-weight:700;color:var(--text-2)}
+  .card-head .sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .tabs{display:flex;gap:4px;background:var(--surface-2);padding:3px;border-radius:8px}
+  .tab{padding:6px 12px;font-size:12px;font-weight:600;border-radius:6px;color:var(--muted);cursor:pointer;transition:all .2s}
+  .tab.active{background:var(--bg-1);color:var(--text-2);box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+  [data-theme="dark"] .tab.active{background:var(--surface-3)}
+  .tab:hover:not(.active){color:var(--text)}
+  .link-btn{font-size:12px;color:var(--primary-2);font-weight:600;display:flex;align-items:center;gap:4px;cursor:pointer}
+  .link-btn:hover{color:var(--text)}
+
+  /* CHART */
+  .chart-wrap{position:relative;height:280px}
+  .chart-controls{display:flex;gap:8px;margin-top:12px}
+  .chart-ctrl-btn{
+    padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;
+    background:var(--surface-2);border:1px solid var(--border);
+    display:inline-flex;align-items:center;gap:4px;transition:all .2s;color:var(--text);
+  }
+  .chart-ctrl-btn:hover{background:var(--surface-3);border-color:var(--border-2)}
+  .chart-ctrl-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+
+  /* AI FEED */
+  .feed{display:flex;flex-direction:column;gap:12px;max-height:320px;overflow-y:auto;padding-right:4px}
+  .feed-item{
+    padding:12px;border-radius:12px;
+    background:var(--bg-2);border:1px solid var(--border);
+    display:flex;gap:10px;transition:all .2s;
+  }
+  .feed-item:hover{border-color:var(--border-2)}
+  .feed-ico{
+    width:32px;height:32px;border-radius:8px;flex-shrink:0;
+    display:grid;place-items:center;font-size:14px;
+  }
+  .feed-ico.danger{background:rgba(220,47,82,0.12);color:var(--danger)}
+  .feed-ico.warn{background:rgba(232,150,18,0.12);color:var(--warning)}
+  .feed-ico.success{background:rgba(13,150,104,0.12);color:var(--success)}
+  .feed-ico.info{background:rgba(0,153,204,0.12);color:var(--primary-2)}
+  .feed-body{flex:1;min-width:0}
+  .feed-title{font-size:13px;font-weight:600;margin-bottom:2px;color:var(--text-2)}
+  .feed-desc{font-size:12px;color:var(--muted);line-height:1.4}
+  .feed-time{font-size:11px;color:var(--muted-2);margin-top:4px}
+
+  /* ALERTS TABLE */
+  .table-controls{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+  .table-search{
+    flex:1;min-width:200px;padding:8px 12px 8px 36px;
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:8px;color:var(--text);font-size:12px;
+    outline:none;transition:all .2s;position:relative;
+  }
+  .table-search-wrap{position:relative;flex:1;min-width:200px}
+  .table-search-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px}
+  .table-search-wrap input{
+    width:100%;padding:8px 12px 8px 36px;
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:8px;color:var(--text);font-size:12px;
+    outline:none;transition:all .2s;
+  }
+  .table-search-wrap input::placeholder{color:var(--muted)}
+  .table-search-wrap input:focus{border-color:rgba(124,92,255,0.4);background:var(--surface-2)}
+  
+  .table-filters{display:flex;gap:6px;flex-wrap:wrap}
+  .filter-chip{
+    padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;
+    background:var(--surface-2);border:1px solid var(--border);
+    cursor:pointer;transition:all .2s;color:var(--muted);
+  }
+  .filter-chip:hover{background:var(--surface-3);color:var(--text)}
+  .filter-chip.active{background:var(--primary);border-color:var(--primary);color:#fff}
+
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{
+    text-align:left;padding:12px 14px;font-size:11px;font-weight:600;
+    color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;
+    border-bottom:1px solid var(--border);cursor:pointer;user-select:none;
+    transition:all .2s;
+  }
+  th:hover{color:var(--text);background:var(--surface)}
+  th i{margin-left:4px;font-size:10px;opacity:0.5}
+  th.sorted i{opacity:1;color:var(--primary)}
+  td{padding:14px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text)}
+  tbody tr{transition:background .2s;cursor:pointer}
+  tbody tr:hover{background:var(--surface)}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr.selected{background:rgba(124,92,255,0.08);border-left:3px solid var(--primary)}
+  .cell-main{font-weight:600;color:var(--text-2)}
+  .cell-sub{font-size:11px;color:var(--muted);margin-top:2px}
+  .pill{
+    display:inline-flex;align-items:center;gap:5px;
+    padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;
+  }
+  .pill.danger{background:rgba(220,47,82,0.12);color:var(--danger)}
+  .pill.warn{background:rgba(232,150,18,0.12);color:var(--warning)}
+  .pill.success{background:rgba(13,150,104,0.12);color:var(--success)}
+  .pill.info{background:rgba(0,153,204,0.12);color:var(--primary-2)}
+  .pill::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+  .priority-bar{display:flex;align-items:center;gap:8px}
+  .priority-bar .bar{flex:1;height:4px;background:var(--surface-2);border-radius:2px;overflow:hidden;min-width:60px}
+  .priority-bar .bar i{display:block;height:100%;border-radius:2px}
+  .priority-bar .val{font-size:12px;font-weight:600;min-width:32px;text-align:right}
+  .row-actions{display:flex;gap:6px}
+  .row-actions button{
+    width:28px;height:28px;border-radius:7px;
+    background:var(--surface-2);border:1px solid var(--border);
+    display:grid;place-items:center;font-size:12px;transition:all .2s;color:var(--text);
+  }
+  .row-actions button:hover{background:var(--primary);border-color:var(--primary);color:#fff}
+  .row-actions button.approve:hover{background:var(--success);border-color:var(--success)}
+  .row-actions button.reject:hover{background:var(--danger);border-color:var(--danger)}
+
+  .bulk-actions{
+    display:flex;gap:8px;padding:12px 16px;
+    background:var(--bg-2);border:1px solid var(--border);
+    border-radius:10px;margin-bottom:12px;
+    align-items:center;
+  }
+  .bulk-actions .count{font-size:12px;font-weight:600;color:var(--text-2)}
+  .bulk-actions .btn{
+    padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;
+    background:var(--surface-2);border:1px solid var(--border);
+    display:inline-flex;align-items:center;gap:4px;transition:all .2s;color:var(--text);
+  }
+  .bulk-actions .btn:hover{background:var(--surface-3)}
+  .bulk-actions .btn.primary{background:var(--grad);border-color:transparent;color:#fff}
+  .bulk-actions .btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+
+  .pagination{display:flex;gap:8px;margin-top:16px;justify-content:center;align-items:center}
+  .pagination button{
+    padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;
+    background:var(--surface-2);border:1px solid var(--border);
+    transition:all .2s;color:var(--text);
+  }
+  .pagination button:hover:not(:disabled){background:var(--surface-3)}
+  .pagination button:disabled{opacity:0.4;cursor:not-allowed}
+  .pagination button.active{background:var(--primary);border-color:var(--primary);color:#fff}
+  .pagination .info{font-size:12px;color:var(--muted)}
+
+  /* NL QUERY */
+  .nl-query{
+    padding:20px;border-radius:16px;
+    background:linear-gradient(135deg,rgba(124,92,255,0.12),rgba(0,212,255,0.08));
+    border:1px solid rgba(124,92,255,0.25);
+    position:relative;overflow:hidden;
+  }
+  [data-theme="light"] .nl-query{
+    background:linear-gradient(135deg,rgba(109,74,255,0.1),rgba(0,153,204,0.08));
+  }
+  .nl-query::before{
+    content:'';position:absolute;top:-50%;right:-20%;width:300px;height:300px;
+    background:radial-gradient(circle,rgba(124,92,255,0.2),transparent 70%);
+    pointer-events:none;
+  }
+  .nl-query > *{position:relative}
+  .nl-query h3{font-size:15px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;color:var(--text-2)}
+  .nl-query h3 i{color:var(--primary)}
+  .nl-query p{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .nl-input{
+    display:flex;gap:8px;align-items:center;
+    background:var(--bg-1);border:1px solid var(--border-2);
+    border-radius:12px;padding:4px 4px 4px 14px;
+  }
+  .nl-input i.bi-stars{color:var(--primary);font-size:16px}
+  .nl-input input{
+    flex:1;background:transparent;border:none;outline:none;
+    padding:10px 8px;color:var(--text);font-size:13px;font-family:inherit;
+  }
+  .nl-input input::placeholder{color:var(--muted)}
+  .nl-input button{
+    padding:8px 16px;border-radius:8px;
+    background:var(--grad);color:#fff;font-weight:600;font-size:12px;
+    display:flex;align-items:center;gap:6px;transition:all .2s;
+  }
+  .nl-input button:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(124,92,255,0.4)}
+  .nl-suggestions{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+  .nl-suggestions span{
+    font-size:11px;padding:5px 10px;border-radius:999px;
+    background:var(--surface);border:1px solid var(--border);
+    color:var(--muted);cursor:pointer;transition:all .2s;
+  }
+  .nl-suggestions span:hover{background:var(--surface-2);color:var(--text);border-color:var(--border-2)}
+  #nlAnswer{
+    margin-top:14px;padding:12px;border-radius:10px;
+    background:var(--bg-1);border:1px solid var(--border);
+    font-size:13px;display:none;color:var(--text);
+  }
+
+  /* RECOMMENDATIONS */
+  .rec-list{display:flex;flex-direction:column;gap:10px}
+  .rec-item{
+    padding:14px;border-radius:12px;
+    background:var(--bg-2);border:1px solid var(--border);
+    transition:all .2s;
+  }
+  .rec-item:hover{border-color:var(--border-2)}
+  .rec-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .rec-ico{
+    width:28px;height:28px;border-radius:7px;
+    display:grid;place-items:center;font-size:13px;
+    background:var(--grad);color:#fff;
+  }
+  .rec-title{font-size:13px;font-weight:600;flex:1;color:var(--text-2)}
+  .rec-impact{font-size:11px;font-weight:700;color:var(--success)}
+  .rec-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px}
+  .rec-actions{display:flex;gap:6px}
+  .rec-btn{
+    padding:6px 12px;border-radius:7px;font-size:11px;font-weight:600;
+    background:var(--surface-2);border:1px solid var(--border);
+    transition:all .2s;display:inline-flex;align-items:center;gap:4px;color:var(--text);
+  }
+  .rec-btn:hover{background:var(--surface-3);color:var(--text-2)}
+  .rec-btn.primary{background:var(--grad);border-color:transparent;color:#fff}
+  .rec-btn.primary:hover{box-shadow:0 4px 12px rgba(124,92,255,0.4)}
+
+  /* PIPELINE */
+  .pipeline{display:flex;flex-direction:column;gap:14px}
+  .pipe-row{display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
+  .pipe-row:hover{transform:translateX(4px)}
+  .pipe-label{width:100px;font-size:12px;color:var(--muted);font-weight:500}
+  .pipe-bar{flex:1;height:28px;background:var(--bg-2);border-radius:8px;overflow:hidden;position:relative;border:1px solid var(--border)}
+  .pipe-bar i{display:block;height:100%;border-radius:8px;transition:width 1s}
+  .pipe-val{width:80px;text-align:right;font-size:12px;font-weight:700;color:var(--text-2)}
+
+  /* MODAL */
+  .modal-backdrop{
+    position:fixed;inset:0;background:var(--overlay-bg);
+    backdrop-filter:blur(8px);z-index:200;
+    display:none;align-items:center;justify-content:center;padding:20px;
+  }
+  .modal-backdrop.show{display:flex;animation:fadeIn .2s}
+  .modal{
+    background:var(--bg-1);border:1px solid var(--border);
+    border-radius:16px;padding:24px;max-width:600px;width:100%;
+    box-shadow:var(--shadow-elev);max-height:90vh;overflow-y:auto;
+  }
+  .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .modal-head h3{font-size:18px;font-weight:700;color:var(--text-2)}
+  .modal-close{
+    width:32px;height:32px;border-radius:8px;
+    background:var(--surface-2);border:1px solid var(--border);
+    display:grid;place-items:center;font-size:16px;transition:all .2s;color:var(--text);
+  }
+  .modal-close:hover{background:var(--danger);border-color:var(--danger);color:#fff}
+  .modal-section{margin-bottom:20px}
+  .modal-section h4{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px}
+  .modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .modal-field{
+    padding:12px;border-radius:10px;
+    background:var(--bg-2);border:1px solid var(--border);
+  }
+  .modal-field .label{font-size:11px;color:var(--muted);margin-bottom:4px}
+  .modal-field .value{font-size:14px;font-weight:600;color:var(--text-2)}
+  .modal-actions{display:flex;gap:10px;margin-top:24px;justify-content:flex-end}
+  .modal-btn{
+    padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;
+    background:var(--surface-2);border:1px solid var(--border);
+    transition:all .2s;display:inline-flex;align-items:center;gap:6px;color:var(--text);
+  }
+  .modal-btn:hover{background:var(--surface-3)}
+  .modal-btn.primary{background:var(--grad);border-color:transparent;color:#fff}
+  .modal-btn.primary:hover{box-shadow:0 4px 12px rgba(124,92,255,0.4)}
+  .modal-btn.success{background:var(--success);border-color:var(--success);color:#fff}
+  .modal-btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+
+  /* TOAST */
+  .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:10px}
+  .toast{
+    background:var(--bg-1);border:1px solid var(--border);
+    padding:14px 18px;border-radius:12px;
+    box-shadow:var(--shadow-elev);
+    display:flex;align-items:center;gap:12px;
+    animation:slideIn .3s;min-width:280px;
+  }
+  .toast i{font-size:18px}
+  .toast.success i{color:var(--success)}
+  .toast.danger i{color:var(--danger)}
+  .toast.info i{color:var(--primary-2)}
+  .toast .msg{flex:1;font-size:13px;font-weight:500;color:var(--text-2)}
+  @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+  /* RESPONSIVE */
+  @media(max-width:1200px){
+    .kpi-grid{grid-template-columns:repeat(2,1fr)}
+    .grid-2{grid-template-columns:1fr}
+    .grid-3{grid-template-columns:1fr}
+  }
+  @media(max-width:900px){
+    :root{--sidebar-w:0px}
+    .sidebar{
+      position:fixed;top:0;left:-280px;width:260px;z-index:100;
+      transition:left .3s;
+    }
+    .sidebar.open{left:0;--sidebar-w:260px}
+    .menu-toggle{display:block}
+    .search{display:none}
+    .content{padding:20px 16px}
+    .topbar{padding:12px 16px}
+  }
+  @media(max-width:600px){
+    .kpi-grid{grid-template-columns:1fr}
+    .kpi .val{font-size:22px}
+    .page-title p{display:none}
+    .theme-toggle{width:48px;height:28px}
+    .theme-toggle .thumb{width:22px;height:22px;font-size:11px}
+    [data-theme="light"] .theme-toggle .thumb{transform:translateX(20px)}
+    .modal-grid{grid-template-columns:1fr}
+  }
+
+  .overlay{
+    position:fixed;inset:0;background:var(--overlay-bg);z-index:99;
+    opacity:0;pointer-events:none;transition:opacity .3s;
+  }
+  .overlay.show{opacity:1;pointer-events:all}
+
+  /* Animations */
+  .fade-in{animation:fadeIn .5s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="overlay" id="overlay"></div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <div class="logo-mark"><i class="bi bi-shield-lock-fill"></i></div>
+      <div class="logo-text">
+        <span>NanoAgent</span>
+        <small>Compliance Hub</small>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active"><i class="bi bi-grid-1x2-fill"></i>Dashboard</div>
+      <div class="nav-item"><i class="bi bi-receipt"></i>Expenses<span class="nav-badge info">248</span></div>
+      <div class="nav-item"><i class="bi bi-diagram-3"></i>Agents<span class="nav-badge info">4</span></div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Audit</div>
+      <div class="nav-item"><i class="bi bi-inboxes"></i>Review Queue<span class="nav-badge warn">17</span></div>
+      <div class="nav-item"><i class="bi bi-check2-square"></i>Approvals</div>
+      <div class="nav-item"><i class="bi bi-flag"></i>Flagged Items<span class="nav-badge">6</span></div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Security</div>
+      <div class="nav-item"><i class="bi bi-shield-lock"></i>PII Redaction</div>
+      <div class="nav-item"><i class="bi bi-bug"></i>Prompt Defense</div>
+      <div class="nav-item"><i class="bi bi-hdd-network"></i>MCP Servers</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">System</div>
+      <div class="nav-item"><i class="bi bi-people"></i>Users</div>
+      <div class="nav-item"><i class="bi bi-journal-text"></i>Audit Logs</div>
+      <div class="nav-item"><i class="bi bi-gear"></i>Settings</div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="agent-status">
+        <div class="row">
+          <div class="dot"></div>
+          <div>
+            <div class="t">All Agents Online</div>
+            <div class="s">4/4 active · 99.8% uptime</div>
+          </div>
+        </div>
+        <div class="bar"><i></i></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar">
+      <button class="menu-toggle" id="menuToggle"><i class="bi bi-list"></i></button>
+      <div class="page-title">
+        <h1>Good morning!</h1>
+        <p>Here's what's happening with your expense auditing pipeline today.</p>
+      </div>
+      <div class="search">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="Search expenses, agents, reports..." id="searchInput"/>
+        <kbd>⌘K</kbd>
+      </div>
+      <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+        <div class="thumb">
+          <i class="bi bi-moon-fill icon-moon"></i>
+          <i class="bi bi-sun-fill icon-sun"></i>
+        </div>
+      </button>
+      <button class="icon-btn" title="Notifications"><i class="bi bi-bell"></i><span class="ping"></span></button>
+      <button class="icon-btn" title="Help"><i class="bi bi-question-circle"></i></button>
+      <div class="avatar">AK</div>
+    </header>
+
+    <section class="content fade-in">
+      <!-- KPI -->
+      <div class="kpi-grid">
+        <div class="kpi info">
+          <div class="top">
+            <div class="ico"><i class="bi bi-cash-stack"></i></div>
+            <div class="delta up"><i class="bi bi-arrow-up-short"></i>12.4%</div>
+          </div>
+          <div class="lbl">Total Expenses Audited</div>
+          <div class="val">$2.84M</div>
+          <div class="sub">3,421 reports this month</div>
+        </div>
+        <div class="kpi warn">
+          <div class="top">
+            <div class="ico"><i class="bi bi-hourglass-split"></i></div>
+            <div class="delta down"><i class="bi bi-arrow-down-short"></i>8.1%</div>
+          </div>
+          <div class="lbl">Pending Reviews</div>
+          <div class="val">17</div>
+          <div class="sub">Avg. 2.3h turnaround</div>
+        </div>
+        <div class="kpi danger">
+          <div class="top">
+            <div class="ico"><i class="bi bi-exclamation-octagon"></i></div>
+            <div class="delta up"><i class="bi bi-arrow-up-short"></i>24.7%</div>
+          </div>
+          <div class="lbl">Fraud Detected</div>
+          <div class="val">42</div>
+          <div class="sub">$184K saved</div>
+        </div>
+        <div class="kpi success">
+          <div class="top">
+            <div class="ico"><i class="bi bi-patch-check"></i></div>
+            <div class="delta up"><i class="bi bi-arrow-up-short"></i>3.2%</div>
+          </div>
+          <div class="lbl">Compliance Rate</div>
+          <div class="val">98.6%</div>
+          <div class="sub">Above SLA target</div>
+        </div>
+      </div>
+
+      <!-- NL Query -->
+      <div class="nl-query" style="margin-bottom:24px">
+        <h3><i class="bi bi-stars"></i>AI-Powered Query</h3>
+        <p>Ask questions about expenses, compliance, or agent performance in natural language</p>
+        <div class="nl-input">
+          <i class="bi bi-stars"></i>
+          <input type="text" placeholder="e.g., Show me high-risk expenses from last week..." id="nlQueryInput"/>
+          <button id="nlQueryBtn"><i class="bi bi-send-fill"></i>Ask AI</button>
+        </div>
+        <div class="nl-suggestions">
+          <span>Show flagged expenses > $5000</span>
+          <span>Which agent blocked most injections?</span>
+          <span>Compliance rate by department</span>
+          <span>Top 5 expense categories this month</span>
+        </div>
+        <div id="nlAnswer"></div>
+      </div>
+
+      <!-- Charts + Activity -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Expense Auditing Volume</h3>
+              <div class="sub">Click data points for details · Drag to zoom</div>
+            </div>
+            <div class="tabs">
+              <div class="tab active" data-range="30">30D</div>
+              <div class="tab" data-range="90">90D</div>
+              <div class="tab" data-range="365">1Y</div>
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="volumeChart"></canvas></div>
+          <div class="chart-controls">
+            <button class="chart-ctrl-btn" id="resetZoom"><i class="bi bi-arrow-counterclockwise"></i>Reset Zoom</button>
+            <button class="chart-ctrl-btn" id="toggleProcessed"><i class="bi bi-eye"></i>Toggle Processed</button>
+            <button class="chart-ctrl-btn" id="toggleFlagged"><i class="bi bi-eye"></i>Toggle Flagged</button>
+            <button class="chart-ctrl-btn" id="exportChart"><i class="bi bi-download"></i>Export Data</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Recent Activity</h3>
+              <div class="sub">Live agent actions</div>
+            </div>
+            <button class="link-btn">View all <i class="bi bi-arrow-right"></i></button>
+          </div>
+          <div class="feed">
+            <div class="feed-item">
+              <div class="feed-ico danger"><i class="bi bi-shield-check"></i></div>
+              <div class="feed-body">
+                <div class="feed-title">Security Agent</div>
+                <div class="feed-desc">Blocked prompt injection attempt on EXP-4821</div>
+                <div class="feed-time">2 minutes ago</div>
+              </div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-ico info"><i class="bi bi-eye-slash"></i></div>
+              <div class="feed-body">
+                <div class="feed-title">PII Redaction</div>
+                <div class="feed-desc">Masked 3 credit card numbers in batch #287</div>
+                <div class="feed-time">14 minutes ago</div>
+              </div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-ico success"><i class="bi bi-person-check"></i></div>
+              <div class="feed-body">
+                <div class="feed-title">Manager Approval</div>
+                <div class="feed-desc">Approved EXP-4819 by Sarah Chen</div>
+                <div class="feed-time">28 minutes ago</div>
+              </div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-ico warn"><i class="bi bi-flag-fill"></i></div>
+              <div class="feed-body">
+                <div class="feed-title">Risk Agent</div>
+                <div class="feed-desc">Flagged EXP-4815 — duplicate vendor invoice</div>
+                <div class="feed-time">1 hour ago</div>
+              </div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-ico success"><i class="bi bi-clipboard-check"></i></div>
+              <div class="feed-body">
+                <div class="feed-title">Compliance Agent</div>
+                <div class="feed-desc">Passed 47 reports against T&E policy v3.2</div>
+                <div class="feed-time">2 hours ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expense Queue -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-head">
+          <div>
+            <h3>Expense Review Queue</h3>
+            <div class="sub">Click rows for details · Sort by clicking headers</div>
+          </div>
+        </div>
+        
+        <div class="table-controls">
+          <div class="table-search-wrap">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Search in table..." id="tableSearch"/>
+          </div>
+          <div class="table-filters">
+            <button class="filter-chip active" data-filter="all">All</button>
+            <button class="filter-chip" data-filter="pending">Pending</button>
+            <button class="filter-chip" data-filter="flagged">Flagged</button>
+            <button class="filter-chip" data-filter="approved">Approved</button>
+          </div>
+        </div>
+
+        <div class="bulk-actions" id="bulkActions" style="display:none">
+          <div class="count"><span id="selectedCount">0</span> selected</div>
+          <button class="btn primary" id="bulkApprove"><i class="bi bi-check-lg"></i>Approve Selected</button>
+          <button class="btn danger" id="bulkReject"><i class="bi bi-x-lg"></i>Reject Selected</button>
+          <button class="btn" id="clearSelection"><i class="bi bi-x"></i>Clear</button>
+        </div>
+
+        <div class="table-wrap">
+          <table id="expenseTable">
+            <thead>
+              <tr>
+                <th data-sort="id">Report <i class="bi bi-chevron-expand"></i></th>
+                <th data-sort="name">Employee <i class="bi bi-chevron-expand"></i></th>
+                <th data-sort="amount">Amount <i class="bi bi-chevron-expand"></i></th>
+                <th data-sort="cat">Category <i class="bi bi-chevron-expand"></i></th>
+                <th data-sort="risk">Risk Score <i class="bi bi-chevron-expand"></i></th>
+                <th data-sort="status">Status <i class="bi bi-chevron-expand"></i></th>
+                <th data-sort="agent">Agent <i class="bi bi-chevron-expand"></i></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="expenseTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="pagination" id="pagination"></div>
+      </div>
+
+      <!-- Bottom row -->
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Risk Distribution</h3>
+              <div class="sub">Click segments to filter table</div>
+            </div>
+          </div>
+          <div class="chart-wrap" style="height:240px"><canvas id="riskChart"></canvas></div>
+          <div class="chart-controls">
+            <button class="chart-ctrl-btn" id="resetRiskFilter"><i class="bi bi-arrow-counterclockwise"></i>Reset Filter</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Agent Performance</h3>
+              <div class="sub">Click for detailed metrics</div>
+            </div>
+          </div>
+          <div class="pipeline">
+            <div class="pipe-row" data-agent="Security">
+              <div class="pipe-label">Security</div>
+              <div class="pipe-bar"><i style="width:92%;background:var(--grad)"></i></div>
+              <div class="pipe-val">1,284</div>
+            </div>
+            <div class="pipe-row" data-agent="Compliance">
+              <div class="pipe-label">Compliance</div>
+              <div class="pipe-bar"><i style="width:86%;background:var(--grad)"></i></div>
+              <div class="pipe-val">1,198</div>
+            </div>
+            <div class="pipe-row" data-agent="Risk">
+              <div class="pipe-label">Risk Scoring</div>
+              <div class="pipe-bar"><i style="width:88%;background:var(--grad)"></i></div>
+              <div class="pipe-val">1,201</div>
+            </div>
+            <div class="pipe-row" data-agent="Manager">
+              <div class="pipe-label">Manager</div>
+              <div class="pipe-bar"><i style="width:24%;background:var(--grad)"></i></div>
+              <div class="pipe-val">312</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>AI Recommendations</h3>
+              <div class="sub">Optimization suggestions</div>
+            </div>
+          </div>
+          <div class="rec-list">
+            <div class="rec-item">
+              <div class="rec-head">
+                <div class="rec-ico"><i class="bi bi-lightning-charge-fill"></i></div>
+                <div class="rec-title">Optimize Risk Threshold</div>
+                <div class="rec-impact">+15% efficiency</div>
+              </div>
+              <div class="rec-desc">Adjust risk scoring threshold from 70 to 65 to catch more potential fraud early.</div>
+              <div class="rec-actions">
+                <button class="rec-btn primary">Apply</button>
+                <button class="rec-btn">Dismiss</button>
+              </div>
+            </div>
+            <div class="rec-item">
+              <div class="rec-head">
+                <div class="rec-ico"><i class="bi bi-shield-fill-check"></i></div>
+                <div class="rec-title">Enhance PII Detection</div>
+                <div class="rec-impact">+8% accuracy</div>
+              </div>
+              <div class="rec-desc">Enable advanced regex patterns for better credit card detection.</div>
+              <div class="rec-actions">
+                <button class="rec-btn primary">Apply</button>
+                <button class="rec-btn">Dismiss</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;color:var(--muted-2);font-size:12px;padding:10px 0 20px">
+        NanoAgent Compliance Hub · FastAPI + Docker · Multi-Agent Architecture v2.4.1
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Expense Details</h3>
+      <button class="modal-close" id="modalClose"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div id="modalContent"></div>
+    <div class="modal-actions">
+      <button class="modal-btn" id="modalCancel">Close</button>
+      <button class="modal-btn danger" id="modalReject"><i class="bi bi-x-lg"></i>Reject</button>
+      <button class="modal-btn success" id="modalApprove"><i class="bi bi-check-lg"></i>Approve</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+  // ========== THEME SYSTEM ==========
+  const root = document.documentElement;
+  const themeToggle = document.getElementById('themeToggle');
+  let volumeChart = null;
+  let riskChart = null;
+
+  function getTheme() {
+    return localStorage.getItem('nanoagent-theme') || 'dark';
+  }
+
+  function applyTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    localStorage.setItem('nanoagent-theme', theme);
+    updateChartsTheme();
+  }
+
+  function toggleTheme() {
+    const current = root.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+  }
+
+  themeToggle.addEventListener('click', toggleTheme);
+  applyTheme(getTheme());
+
+  function getCSSVar(name) {
+    return getComputedStyle(root).getPropertyValue(name).trim();
+  }
+
+  function updateChartsTheme() {
+    requestAnimationFrame(() => {
+      const gridColor = getCSSVar('--chart-grid');
+      const muted = getCSSVar('--muted');
+      const text = getCSSVar('--text');
+      const isDark = root.getAttribute('data-theme') === 'dark';
+
+      if (volumeChart) {
+        volumeChart.options.scales.x.grid.color = gridColor;
+        volumeChart.options.scales.x.ticks.color = muted;
+        volumeChart.options.scales.y.grid.color = gridColor;
+        volumeChart.options.scales.y.ticks.color = muted;
+        volumeChart.options.plugins.tooltip.backgroundColor = isDark ? '#fff' : '#0a0e2a';
+        volumeChart.options.plugins.tooltip.titleColor = isDark ? '#000' : '#fff';
+        volumeChart.options.plugins.tooltip.bodyColor = isDark ? '#000' : '#fff';
+        volumeChart.options.plugins.tooltip.borderColor = isDark ? '#000' : '#fff';
+        volumeChart.update('none');
+      }
+
+      if (riskChart) {
+        riskChart.options.plugins.legend.labels.color = muted;
+        riskChart.options.plugins.tooltip.backgroundColor = isDark ? '#fff' : '#0a0e2a';
+        riskChart.options.plugins.tooltip.titleColor = isDark ? '#000' : '#fff';
+        riskChart.options.plugins.tooltip.bodyColor = isDark ? '#000' : '#fff';
+        riskChart.options.plugins.tooltip.borderColor = isDark ? '#000' : '#fff';
+        riskChart.update('none');
+      }
+    });
+  }
+
+  // ========== SIDEBAR ==========
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  document.getElementById('menuToggle').addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('show');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+  });
+
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+      if (window.innerWidth < 900) {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+      }
+    });
+  });
+
+  // ========== TABS ==========
+  document.querySelectorAll('.tabs').forEach(group => {
+    group.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        group.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        // Update chart data based on range
+        if (tab.dataset.range) {
+          updateVolumeChart(parseInt(tab.dataset.range));
+        }
+      });
+    });
+  });
+
+  // ========== NL QUERY ==========
+  const nlInput = document.getElementById('nlQueryInput');
+  const nlBtn = document.getElementById('nlQueryBtn');
+  const nlAnswer = document.getElementById('nlAnswer');
+
+  nlBtn.addEventListener('click', () => {
+    const query = nlInput.value.trim();
+    if (!query) return;
+    
+    nlAnswer.style.display = 'block';
+    nlAnswer.innerHTML = '<i class="bi bi-hourglass-split"></i> Analyzing your query...';
+    
+    setTimeout(() => {
+      nlAnswer.innerHTML = `
+        <div style="display:flex;align-items:start;gap:10px">
+          <i class="bi bi-stars" style="color:var(--primary);font-size:16px;margin-top:2px"></i>
+          <div>
+            <strong>AI Response:</strong><br>
+            Based on your query "<em>${query}</em>", I found 23 matching expense reports. 
+            The average risk score is 67.4, with 8 reports flagged for manual review. 
+            Would you like me to generate a detailed report?
+          </div>
+        </div>
+      `;
+    }, 1500);
+  });
+
+  document.querySelectorAll('.nl-suggestions span').forEach(suggestion => {
+    suggestion.addEventListener('click', () => {
+      nlInput.value = suggestion.textContent;
+      nlBtn.click();
+    });
+  });
+
+  // ========== EXPENSE DATA ==========
+  let expenses = [
+    { id:'EXP-4821', name:'Sarah Chen', dept:'Engineering', amount:3420, cat:'Travel', risk:82, status:'Flagged', agent:'Risk Agent', statusClass:'danger', date:'Jun 22, 2026' },
+    { id:'EXP-4820', name:'James Miller', dept:'Sales', amount:4280, cat:'Travel', risk:64, status:'Pending', agent:'Manager', statusClass:'warn', date:'Jun 22, 2026' },
+    { id:'EXP-4819', name:'Sarah Chen', dept:'Engineering', amount:890, cat:'Meals', risk:12, status:'Approved', agent:'Compliance', statusClass:'success', date:'Jun 21, 2026' },
+    { id:'EXP-4818', name:'Priya Rao', dept:'R&D', amount:12450, cat:'Equipment', risk:71, status:'Pending', agent:'Manager', statusClass:'warn', date:'Jun 21, 2026' },
+    { id:'EXP-4817', name:'Marco Silva', dept:'Marketing', amount:1250, cat:'Events', risk:28, status:'Approved', agent:'Security', statusClass:'success', date:'Jun 20, 2026' },
+    { id:'EXP-4816', name:'Tom Wilson', dept:'Operations', amount:890, cat:'Meals', risk:45, status:'Pending', agent:'Manager', statusClass:'warn', date:'Jun 20, 2026' },
+    { id:'EXP-4815', name:'Emma Davis', dept:'Finance', amount:2100, cat:'Software', risk:88, status:'Flagged', agent:'Risk Agent', statusClass:'danger', date:'Jun 19, 2026' },
+    { id:'EXP-4814', name:'Lisa Kowalski', dept:'HR', amount:2100, cat:'Software', risk:52, status:'Pending', agent:'Manager', statusClass:'warn', date:'Jun 19, 2026' },
+    { id:'EXP-4813', name:'David Park', dept:'Engineering', amount:5600, cat:'Travel', risk:76, status:'Flagged', agent:'Risk Agent', statusClass:'danger', date:'Jun 18, 2026' },
+    { id:'EXP-4812', name:'Anna Schmidt', dept:'Sales', amount:1800, cat:'Meals', risk:34, status:'Approved', agent:'Compliance', statusClass:'success', date:'Jun 18, 2026' },
+    { id:'EXP-4811', name:'Carlos Mendez', dept:'Operations', amount:3200, cat:'Equipment', risk:58, status:'Pending', agent:'Manager', statusClass:'warn', date:'Jun 17, 2026' },
+    { id:'EXP-4810', name:'Yuki Tanaka', dept:'R&D', amount:950, cat:'Software', risk:22, status:'Approved', agent:'Security', statusClass:'success', date:'Jun 17, 2026' },
+  ];
+
+  let filteredExpenses = [...expenses];
+  let selectedExpenses = new Set();
+  let currentSort = { field: null, asc: true };
+  let currentPage = 1;
+  const itemsPerPage = 8;
+
+  function riskColor(risk) {
+    if (risk > 70) return 'var(--danger)';
+    if (risk > 40) return 'var(--warning)';
+    return 'var(--success)';
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('expenseTableBody');
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageData = filteredExpenses.slice(start, end);
+
+    tbody.innerHTML = pageData.map(e => {
+      const initials = e.name.split(' ').map(n=>n[0]).join('');
+      const isSelected = selectedExpenses.has(e.id);
+      return `
+        <tr data-id="${e.id}" class="${isSelected ? 'selected' : ''}">
+          <td>
+            <input type="checkbox" style="margin-right:8px" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation();toggleSelect('${e.id}')">
+            <span class="cell-main">${e.id}</span>
+            <div class="cell-sub">${e.date}</div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="avatar" style="width:32px;height:32px;font-size:11px">${initials}</div>
+              <div>
+                <div class="cell-main">${e.name}</div>
+                <div class="cell-sub">${e.dept}</div>
+              </div>
+            </div>
+          </td>
+          <td><b>$${e.amount.toLocaleString()}</b></td>
+          <td><span class="pill info">${e.cat}</span></td>
+          <td>
+            <div class="priority-bar">
+              <div class="bar"><i style="width:${e.risk}%;background:${riskColor(e.risk)}"></i></div>
+              <div class="val" style="color:${riskColor(e.risk)}">${e.risk}</div>
+            </div>
+          </td>
+          <td><span class="pill ${e.statusClass}">${e.status}</span></td>
+          <td style="color:var(--muted)">${e.agent}</td>
+          <td>
+            <div class="row-actions">
+              <button title="View" onclick="event.stopPropagation();viewExpense('${e.id}')"><i class="bi bi-eye"></i></button>
+              <button class="approve" title="Approve" onclick="event.stopPropagation();approveExpense('${e.id}')"><i class="bi bi-check-lg"></i></button>
+              <button class="reject" title="Reject" onclick="event.stopPropagation();rejectExpense('${e.id}')"><i class="bi bi-x-lg"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // Add click handlers for rows
+    tbody.querySelectorAll('tr').forEach(row => {
+      row.addEventListener('click', () => {
+        const id = row.dataset.id;
+        viewExpense(id);
+      });
+    });
+
+    renderPagination();
+    updateBulkActions();
+  }
+
+  function renderPagination() {
+    const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
+    const pagination = document.getElementById('pagination');
+    
+    let html = `<button ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})"><i class="bi bi-chevron-left"></i></button>`;
+    
+    for (let i = 1; i <= totalPages; i++) {
+      html += `<button class="${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+    }
+    
+    html += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})"><i class="bi bi-chevron-right"></i></button>`;
+    html += `<span class="info">Showing ${(currentPage-1)*itemsPerPage + 1}-${Math.min(currentPage*itemsPerPage, filteredExpenses.length)} of ${filteredExpenses.length}</span>`;
+    
+    pagination.innerHTML = html;
+  }
+
+  function changePage(page) {
+    const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderTable();
+  }
+
+  function toggleSelect(id) {
+    if (selectedExpenses.has(id)) {
+      selectedExpenses.delete(id);
+    } else {
+      selectedExpenses.add(id);
+    }
+    renderTable();
+  }
+
+  function updateBulkActions() {
+    const bulkActions = document.getElementById('bulkActions');
+    const count = selectedExpenses.size;
+    document.getElementById('selectedCount').textContent = count;
+    bulkActions.style.display = count > 0 ? 'flex' : 'none';
+  }
+
+  document.getElementById('clearSelection').addEventListener('click', () => {
+    selectedExpenses.clear();
+    renderTable();
+  });
+
+  document.getElementById('bulkApprove').addEventListener('click', () => {
+    selectedExpenses.forEach(id => {
+      const exp = expenses.find(e => e.id === id);
+      if (exp) {
+        exp.status = 'Approved';
+        exp.statusClass = 'success';
+      }
+    });
+    showToast('success', `${selectedExpenses.size} expenses approved`);
+    selectedExpenses.clear();
+    applyFilters();
+  });
+
+  document.getElementById('bulkReject').addEventListener('click', () => {
+    selectedExpenses.forEach(id => {
+      const exp = expenses.find(e => e.id === id);
+      if (exp) {
+        exp.status = 'Rejected';
+        exp.statusClass = 'danger';
+      }
+    });
+    showToast('danger', `${selectedExpenses.size} expenses rejected`);
+    selectedExpenses.clear();
+    applyFilters();
+  });
+
+  // Table search
+  document.getElementById('tableSearch').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    filteredExpenses = expenses.filter(exp => 
+      exp.id.toLowerCase().includes(query) ||
+      exp.name.toLowerCase().includes(query) ||
+      exp.dept.toLowerCase().includes(query) ||
+      exp.cat.toLowerCase().includes(query) ||
+      exp.agent.toLowerCase().includes(query)
+    );
+    currentPage = 1;
+    renderTable();
+  });
+
+  // Table filters
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      applyFilters();
+    });
+  });
+
+  function applyFilters() {
+    const activeFilter = document.querySelector('.filter-chip.active').dataset.filter;
+    const searchQuery = document.getElementById('tableSearch').value.toLowerCase();
+    
+    filteredExpenses = expenses.filter(exp => {
+      const matchesFilter = activeFilter === 'all' || exp.status.toLowerCase() === activeFilter;
+      const matchesSearch = !searchQuery || 
+        exp.id.toLowerCase().includes(searchQuery) ||
+        exp.name.toLowerCase().includes(searchQuery) ||
+        exp.dept.toLowerCase().includes(searchQuery) ||
+        exp.cat.toLowerCase().includes(searchQuery) ||
+        exp.agent.toLowerCase().includes(searchQuery);
+      return matchesFilter && matchesSearch;
+    });
+    
+    currentPage = 1;
+    renderTable();
+  }
+
+  // Table sorting
+  document.querySelectorAll('th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const field = th.dataset.sort;
+      
+      if (currentSort.field === field) {
+        currentSort.asc = !currentSort.asc;
+      } else {
+        currentSort.field = field;
+        currentSort.asc = true;
+      }
+      
+      // Update UI
+      document.querySelectorAll('th').forEach(t => t.classList.remove('sorted'));
+      th.classList.add('sorted');
+      th.querySelector('i').className = currentSort.asc ? 'bi bi-chevron-up' : 'bi bi-chevron-down';
+      
+      // Sort data
+      filteredExpenses.sort((a, b) => {
+        let aVal = a[field];
+        let bVal = b[field];
+        
+        if (field === 'amount' || field === 'risk') {
+          aVal = Number(aVal);
+          bVal = Number(bVal);
+        } else {
+          aVal = String(aVal).toLowerCase();
+          bVal = String(bVal).toLowerCase();
+        }
+        
+        if (aVal < bVal) return currentSort.asc ? -1 : 1;
+        if (aVal > bVal) return currentSort.asc ? 1 : -1;
+        return 0;
+      });
+      
+      renderTable();
+    });
+  });
+
+  // ========== MODAL ==========
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const modal = document.getElementById('modal');
+  let currentExpenseId = null;
+
+  function viewExpense(id) {
+    const exp = expenses.find(e => e.id === id);
+    if (!exp) return;
+    
+    currentExpenseId = id;
+    document.getElementById('modalTitle').textContent = `Expense Details — ${exp.id}`;
+    
+    const initials = exp.name.split(' ').map(n=>n[0]).join('');
+    
+    document.getElementById('modalContent').innerHTML = `
+      <div class="modal-section">
+        <h4>Basic Information</h4>
+        <div class="modal-grid">
+          <div class="modal-field">
+            <div class="label">Report ID</div>
+            <div class="value">${exp.id}</div>
+          </div>
+          <div class="modal-field">
+            <div class="label">Date</div>
+            <div class="value">${exp.date}</div>
+          </div>
+          <div class="modal-field">
+            <div class="label">Employee</div>
+            <div class="value" style="display:flex;align-items:center;gap:8px">
+              <div class="avatar" style="width:28px;height:28px;font-size:10px">${initials}</div>
+              ${exp.name}
+            </div>
+          </div>
+          <div class="modal-field">
+            <div class="label">Department</div>
+            <div class="value">${exp.dept}</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-section">
+        <h4>Expense Details</h4>
+        <div class="modal-grid">
+          <div class="modal-field">
+            <div class="label">Amount</div>
+            <div class="value">$${exp.amount.toLocaleString()}</div>
+          </div>
+          <div class="modal-field">
+            <div class="label">Category</div>
+            <div class="value"><span class="pill info">${exp.cat}</span></div>
+          </div>
+          <div class="modal-field">
+            <div class="label">Risk Score</div>
+            <div class="value" style="display:flex;align-items:center;gap:8px">
+              <div class="priority-bar" style="flex:1">
+                <div class="bar"><i style="width:${exp.risk}%;background:${riskColor(exp.risk)}"></i></div>
+                <div class="val" style="color:${riskColor(exp.risk)}">${exp.risk}</div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-field">
+            <div class="label">Status</div>
+            <div class="value"><span class="pill ${exp.statusClass}">${exp.status}</span></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-section">
+        <h4>Agent Processing</h4>
+        <div class="modal-grid">
+          <div class="modal-field">
+            <div class="label">Current Agent</div>
+            <div class="value">${exp.agent}</div>
+          </div>
+          <div class="modal-field">
+            <div class="label">Processing Time</div>
+            <div class="value">${Math.floor(Math.random() * 60) + 10}s</div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    modalBackdrop.classList.add('show');
+  }
+
+  function closeModal() {
+    modalBackdrop.classList.remove('show');
+    currentExpenseId = null;
+  }
+
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalCancel').addEventListener('click', closeModal);
+  modalBackdrop.addEventListener('click', (e) => {
+    if (e.target === modalBackdrop) closeModal();
+  });
+
+  document.getElementById('modalApprove').addEventListener('click', () => {
+    if (currentExpenseId) {
+      approveExpense(currentExpenseId);
+      closeModal();
+    }
+  });
+
+  document.getElementById('modalReject').addEventListener('click', () => {
+    if (currentExpenseId) {
+      rejectExpense(currentExpenseId);
+      closeModal();
+    }
+  });
+
+  function approveExpense(id) {
+    const exp = expenses.find(e => e.id === id);
+    if (exp) {
+      exp.status = 'Approved';
+      exp.statusClass = 'success';
+      showToast('success', `${id} approved successfully`);
+      applyFilters();
+    }
+  }
+
+  function rejectExpense(id) {
+    const exp = expenses.find(e => e.id === id);
+    if (exp) {
+      exp.status = 'Rejected';
+      exp.statusClass = 'danger';
+      showToast('danger', `${id} rejected`);
+      applyFilters();
+    }
+  }
+
+  // ========== TOAST ==========
+  function showToast(type, message) {
+    const wrap = document.getElementById('toasts');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icon = type === 'success' ? 'check-circle-fill' : type === 'danger' ? 'x-circle-fill' : 'info-circle-fill';
+    toast.innerHTML = `<i class="bi bi-${icon}"></i><div class="msg">${message}</div>`;
+    
+    wrap.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(100%)';
+      toast.style.transition = 'all .3s';
+    }, 3000);
+    
+    setTimeout(() => toast.remove(), 3500);
+  }
+
+  // ========== CHARTS ==========
+  const chartData = {
+    30: {
+      labels: ['Jun 1','Jun 4','Jun 7','Jun 10','Jun 13','Jun 16','Jun 19','Jun 22'],
+      processed: [120,145,132,168,182,195,210,224],
+      flagged: [8,12,6,15,9,18,11,14]
+    },
+    90: {
+      labels: ['Apr','May','Jun'],
+      processed: [1200,1450,1680],
+      flagged: [80,120,150]
+    },
+    365: {
+      labels: ['Q1','Q2','Q3','Q4'],
+      processed: [3200,3800,4200,4800],
+      flagged: [320,380,420,480]
+    }
+  };
+
+  function updateVolumeChart(range) {
+    const data = chartData[range];
+    volumeChart.data.labels = data.labels;
+    volumeChart.data.datasets[0].data = data.processed;
+    volumeChart.data.datasets[1].data = data.flagged;
+    volumeChart.update();
+  }
+
+  const labels = chartData[30].labels;
+  const isDarkInit = root.getAttribute('data-theme') === 'dark';
+
+  volumeChart = new Chart(document.getElementById('volumeChart'), {
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {
+          label:'Processed',
+          data:chartData[30].processed,
+          borderColor:'#7c5cff',
+          backgroundColor: isDarkInit ? 'rgba(124,92,255,0.15)' : 'rgba(124,92,255,0.1)',
+          fill:true,
+          tension:.4,
+          borderWidth:2,
+          pointBackgroundColor:'#7c5cff',
+          pointRadius:4,
+          pointHoverRadius:7,
+          pointHoverBorderWidth:3,
+          pointHoverBorderColor:'#fff'
+        },
+        {
+          label:'Flagged',
+          data:chartData[30].flagged,
+          borderColor:'#00d4ff',
+          backgroundColor: isDarkInit ? 'rgba(0,212,255,0.1)' : 'rgba(0,212,255,0.08)',
+          fill:true,
+          tension:.4,
+          borderWidth:2,
+          borderDash:[4,4],
+          pointBackgroundColor:'#00d4ff',
+          pointRadius:4,
+          pointHoverRadius:7,
+          pointHoverBorderWidth:3,
+          pointHoverBorderColor:'#fff'
+        }
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{
+        mode:'index',
+        intersect:false,
+      },
+      onClick:(e, elements) => {
+        if (elements.length > 0) {
+          const index = elements[0].index;
+          const label = volumeChart.data.labels[index];
+          const processed = volumeChart.data.datasets[0].data[index];
+          const flagged = volumeChart.data.datasets[1].data[index];
+          showToast('info', `${label}: ${processed} processed, ${flagged} flagged`);
+        }
+      },
+      plugins:{
+        legend:{
+          display:true,
+          position:'top',
+          labels:{color:getCSSVar('--muted'),font:{family:'Inter',size:11},padding:15,usePointStyle:true}
+        },
+        tooltip:{
+          backgroundColor: isDarkInit ? '#fff' : '#0a0e2a',
+          titleColor: isDarkInit ? '#000' : '#fff',
+          bodyColor: isDarkInit ? '#000' : '#fff',
+          borderColor: isDarkInit ? '#000' : '#fff',
+          borderWidth:1,
+          padding:12,
+          cornerRadius:8,
+          titleFont:{family:'Inter',weight:'600'},
+          bodyFont:{family:'Inter'},
+          callbacks:{
+            label: function(context) {
+              return `${context.dataset.label}: ${context.parsed.y}`;
+            }
+          }
+        },
+        zoom:{
+          zoom:{
+            wheel:{enabled:true},
+            pinch:{enabled:true},
+            mode:'x'
+          },
+          pan:{
+            enabled:true,
+            mode:'x'
+          }
+        }
+      },
+      scales:{
+        x:{
+          grid:{color:getCSSVar('--chart-grid'),drawBorder:false},
+          ticks:{color:getCSSVar('--muted'),font:{family:'Inter',size:11}}
+        },
+        y:{
+          grid:{color:getCSSVar('--chart-grid'),drawBorder:false},
+          ticks:{color:getCSSVar('--muted'),font:{family:'Inter',size:11}}
+        }
+      }
+    }
+  });
+
+  // Chart controls
+  document.getElementById('resetZoom').addEventListener('click', () => {
+    volumeChart.resetZoom();
+    showToast('info', 'Chart zoom reset');
+  });
+
+  document.getElementById('toggleProcessed').addEventListener('click', function() {
+    const meta = volumeChart.getDatasetMeta(0);
+    meta.hidden = !meta.hidden;
+    this.classList.toggle('active');
+    volumeChart.update();
+  });
+
+  document.getElementById('toggleFlagged').addEventListener('click', function() {
+    const meta = volumeChart.getDatasetMeta(1);
+    meta.hidden = !meta.hidden;
+    this.classList.toggle('active');
+    volumeChart.update();
+  });
+
+  document.getElementById('exportChart').addEventListener('click', () => {
+    const data = {
+      labels: volumeChart.data.labels,
+      processed: volumeChart.data.datasets[0].data,
+      flagged: volumeChart.data.datasets[1].data
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'expense-chart-data.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showToast('success', 'Chart data exported');
+  });
+
+  // Risk chart
+  riskChart = new Chart(document.getElementById('riskChart'), {
+    type:'doughnut',
+    data:{
+      labels:['Low','Medium','High','Critical'],
+      datasets:[{
+        data:[58,24,13,5],
+        backgroundColor:['#16a87e', '#e89612', '#e53e5f', '#7c5cff'],
+        borderWidth:0
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      cutout:'70%',
+      onClick:(e, elements) => {
+        if (elements.length > 0) {
+          const index = elements[0].index;
+          const label = riskChart.data.labels[index];
+          const value = riskChart.data.datasets[0].data[index];
+          
+          // Filter table by risk level
+          let riskRange;
+          if (label === 'Low') riskRange = [0, 40];
+          else if (label === 'Medium') riskRange = [41, 70];
+          else if (label === 'High') riskRange = [71, 85];
+          else riskRange = [86, 100];
+          
+          filteredExpenses = expenses.filter(exp => 
+            exp.risk >= riskRange[0] && exp.risk <= riskRange[1]
+          );
+          
+          currentPage = 1;
+          renderTable();
+          showToast('info', `Filtered by ${label} risk: ${value} items`);
+        }
+      },
+      plugins:{
+        legend:{
+          position:'bottom',
+          labels:{color:getCSSVar('--muted'),font:{family:'Inter',size:11},padding:12,boxWidth:10,boxHeight:10}
+        },
+        tooltip:{
+          backgroundColor: isDarkInit ? '#fff' : '#0a0e2a',
+          titleColor: isDarkInit ? '#000' : '#fff',
+          bodyColor: isDarkInit ? '#000' : '#fff',
+          borderColor: isDarkInit ? '#000' : '#fff',
+          borderWidth:1,
+          cornerRadius:8,
+          callbacks:{
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.parsed;
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = ((value / total) * 100).toFixed(1);
+              return `${label}: ${value} (${percentage}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  document.getElementById('resetRiskFilter').addEventListener('click', () => {
+    applyFilters();
+    showToast('info', 'Risk filter reset');
+  });
+
+  // Agent performance click
+  document.querySelectorAll('.pipe-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const agent = row.dataset.agent;
+      const count = row.querySelector('.pipe-val').textContent;
+      showToast('info', `${agent} Agent: ${count} processed`);
+    });
+  });
+
+  // ========== SEARCH ==========
+  document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const val = e.target.value.trim();
+      if (val) {
+        document.getElementById('tableSearch').value = val;
+        document.getElementById('tableSearch').dispatchEvent(new Event('input'));
+        showToast('info', `Searching: "${val}"`);
+      }
+    }
+  });
+  
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      document.getElementById('searchInput').focus();
+    }
+  });
+
+  // Initial render
+  renderTable();
+</script>
+</body>
+</html>
+
