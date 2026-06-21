@@ -1,5 +1,9 @@
 # NanoAgent Compliance Hub
 
+ ![Username](https://komarev.com/ghpvc/?username=mscbuild)
+ [![Author](https://img.shields.io/badge/Author-Yuri%20Dev-blue.svg)](http://mscbuild.github.io/)
+ ![](https://img.shields.io/badge/PRs-Welcome-green)
+ ![](https://img.shields.io/github/languages/code-size/mscbuild/nanoagent-compliance-hub)
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green)
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue)
