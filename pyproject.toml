@@ -1,0 +1,148 @@
+[project]
+name = "nanoagent-compliance-hub"
+version = "1.0.0"
+description = "Multi-Agent Expense Auditing Platform with MCP Integration, Security Controls, Human-in-the-Loop Review, and Docker Deployment"
+readme = "README.md"
+requires-python = ">=3.11"
+
+authors = [
+    { name = "Your Name", email = "your.email@example.com" }
+]
+
+license = { text = "MIT" }
+
+keywords = [
+    "agents",
+    "multi-agent",
+    "adk",
+    "mcp",
+    "fastapi",
+    "expense-auditing",
+    "security",
+    "llm",
+    "ai",
+    "docker"
+]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Framework :: FastAPI",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+
+dependencies = [
+    "fastapi>=0.116.0",
+    "uvicorn[standard]>=0.35.0",
+    "sqlalchemy>=2.0.0",
+    "pydantic>=2.11.0",
+    "python-dotenv>=1.1.0",
+    "jinja2>=3.1.6",
+    "httpx>=0.28.0",
+    "google-generativeai>=0.8.0"
+]
+
+[project.optional-dependencies]
+
+dev = [
+    "pytest>=8.4.0",
+    "pytest-cov>=6.2.0",
+    "black>=25.1.0",
+    "ruff>=0.12.0",
+    "mypy>=1.17.0"
+]
+
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = [
+    "app",
+    "agents",
+    "skills",
+    "dashboard",
+    "mcp_server"
+]
+
+[tool.pytest.ini_options]
+
+testpaths = [
+    "tests"
+]
+
+python_files = [
+    "test_*.py"
+]
+
+python_functions = [
+    "test_*"
+]
+
+addopts = [
+    "--strict-markers",
+    "--disable-warnings"
+]
+
+[tool.black]
+
+line-length = 88
+target-version = ["py311"]
+
+[tool.ruff]
+
+line-length = 88
+
+target-version = "py311"
+
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv",
+    "venv",
+    "build",
+    "dist"
+]
+
+[tool.ruff.lint]
+
+select = [
+    "E",
+    "F",
+    "I",
+    "UP"
+]
+
+ignore = [
+    "E501"
+]
+
+[tool.mypy]
+
+python_version = "3.11"
+
+ignore_missing_imports = true
+
+warn_return_any = true
+
+warn_unused_configs = true
+
+disallow_untyped_defs = false
+
+check_untyped_defs = true
+
+[tool.coverage.run]
+
+source = [
+    "app",
+    "agents",
+    "skills",
+    "mcp_server"
+]
+
+[tool.coverage.report]
+
+show_missing = true
+skip_covered = false
