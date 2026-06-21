@@ -107,7 +107,7 @@ K --> L[Final Decision]
 Clone repository:
 
 ```bash
-git clone https://github.com/yourusername/nanoagent-compliance-hub.git
+git clone https://github.com/mscbuild/nanoagent-compliance-hub.git
 
 cd nanoagent-compliance-hub
 ```
